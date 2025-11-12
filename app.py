@@ -10,7 +10,7 @@ st.title("🧠 Dynamic Text Summarisation App")
 
 st.write(
     "Upload your file below (supported: `.txt`, `.csv`, "
-    "`.json`, `.pdf`, `.docx`)")
+    "`.json`, `.pdf`, `.docx`) ")
 
 
 # Step 1: Upload file
