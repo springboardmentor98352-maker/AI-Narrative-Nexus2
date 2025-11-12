@@ -8,10 +8,16 @@ import docx
 st.set_page_config(page_title="Dynamic Text Summarisation", layout="wide")
 st.title("🧠 Dynamic Text Summarisation App")
 
-st.write("Upload your file below (supported: `.txt`, `.csv`, `.json`, `.pdf`, `.docx`)")
+st.write(
+    "Upload your file below (supported: `.txt`, `.csv`, "
+    "`.json`, `.pdf`, `.docx`)"
+)
 
 # Step 1: Upload file
-uploaded_file = st.file_uploader("Choose a file", type=["txt", "csv", "json", "pdf", "docx"])
+uploaded_file = st.file_uploader(
+    "Choose a file", 
+    type=["txt", "csv", "json", "pdf", "docx"]
+)
 
 if uploaded_file is not None:
     file_type = uploaded_file.name.split(".")[-1].lower()
@@ -52,9 +58,15 @@ if uploaded_file is not None:
         if text_data and text_data.strip():
             st.success("✅ Text data detected in the uploaded file!")
             with st.expander("📜 View Extracted Text"):
-                st.write(text_data[:2000] + ("..." if len(text_data) > 2000 else ""))
+                st.write(
+                    text_data[:2000] +
+                    ("..." if len(text_data) > 2000 else "")
+                )
         else:
-            st.warning("⚠️ The uploaded file does not seem to contain readable text data.")
+            st.warning(
+                "⚠️ The uploaded file does not seem to contain "
+                "readable text data."
+            )
 
     except Exception as e:
         st.error(f"❌ Error reading file: {e}")
