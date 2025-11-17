@@ -57,14 +57,14 @@ if uploaded_file is not None:
         # Step 3: Check if text was successfully extracted
         if text_data and text_data.strip():
             st.success("Text data detected in the uploaded file!")
-            with st.expander("📜 View Extracted Text"):
+            with st.expander("View Extracted Text"):
                 st.write(
                     text_data[:2000] +
                     ("..." if len(text_data) > 2000 else "")
                 )
         else:
             st.warning(
-                "⚠️ The uploaded file does not seem to contain "
+                "The uploaded file does not seem to contain "
                 "readable text data."
             )
 
