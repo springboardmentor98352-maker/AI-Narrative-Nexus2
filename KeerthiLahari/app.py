@@ -1,75 +1,109 @@
 import streamlit as st
-import pandas as pd
-import json
-from io import StringIO
-from PyPDF2 import PdfReader
-import docx
-
-st.set_page_config(page_title="Dynamic Text Summarisation", layout="wide")
-st.title("Dynamic Text Summarisation App")
-
-st.write(
-    "Upload your file below (supported: `.txt`, `.csv`, "
-    "`.json`, `.pdf`, `.docx`) ")
+from streamlit_option_menu import option_menu
+from data_extractor import extract_text_from_file
+from data_preprocessing import preprocess_text
 
 
-# Step 1: Upload file
-uploaded_file = st.file_uploader(
-    "Choose a file", 
-    type=["txt", "csv", "json", "pdf", "docx"]
+# ---------- GLOBAL CSS FIXES ------------
+st.markdown("""
+<style>
+/* Remove Streamlit's default top padding */
+.block-container {
+    padding-top: 1rem !important;
+}
+
+/* Center alignment for all required text */
+.center-text {
+    text-align: center;
+}
+
+/* Optional: increase spacing between sections */
+.spacing {
+    margin-top: -20px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# -----------settings----------------
+title = "Narrative Nexus"
+caption = "Dynamic Text Analysis Platform"
+subheader = " summarise . Analyze . Get Insights "
+icon = "🧠"
+layout = "centered"
+
+# -------------Heading part-------------------------
+st.set_page_config(page_title=title, page_icon=icon, layout=layout)
+st.markdown(f"<h1 class='center-text'>{title} {icon}</h1>", unsafe_allow_html=True)
+st.markdown(f"<h3 class='center-text spacing'>{caption}</h3>", unsafe_allow_html=True)
+st.markdown(f"<p class='center-text spacing'>{subheader}</p>", unsafe_allow_html=True)
+
+# ----------- Navigation Menu --------------
+selected = option_menu(
+            menu_title=None,
+            options=["About", "Text Input", "Text Analysis"],
+            icons=["house", "upload", "bar-chart"],
+            default_index=0,
+            orientation="horizontal",
 )
+# -------------About Section-----------------
+if selected == "About":
+    st.subheader("About Narrative Nexus")
+    entered_text = """
+    <div style="text-align: Justify;font:arial; font-size:20px;">
+    Narrative Nexus is a dynamic text analysis platform designed to help users quickly summarize content,
+    measure word and character counts, evaluate sentiment, and generate meaningful insights from any text.
+    The application supports text uploads and manual input, processes data efficiently, and delivers clearly
+    structured results that can be downloaded for further use. With features ranging from automated summarization
+    to sentiment distribution visualization, Narrative Nexus provides a simple yet powerful tool for students,
+    researchers, professionals, and anyone looking to understand and refine their written content with ease.
+    </div>
+    """
+    st.markdown(entered_text, unsafe_allow_html=True)
 
-if uploaded_file is not None:
-    file_type = uploaded_file.name.split(".")[-1].lower()  # preprocessing
-    st.info(f"Uploaded file type detected: `{file_type}`")
+# -------------Text Input Section----------------
+elif selected == "Text Input":
 
-    text_data = ""  # Initialize variable to hold extracted text
+    st.subheader("Upload a file OR paste text")
 
-    try:
-        # Step 2: Detect and extract text
-        if file_type == "txt":
-            # Read plain text files
-            stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-            text_data = stringio.read()
+    uploaded_file = st.file_uploader("Upload TXT / CSV / PDF", type=["txt", "csv", "pdf"])
+    pasted_text = st.text_area("Or paste text here...", height=200)
 
-        elif file_type == "csv":
-            df = pd.read_csv(uploaded_file)
-            text_data = df.to_string(index=False)
+    if st.button("Process Text"):
+        raw_text, file_type, df_data, error = extract_text_from_file(
+            uploaded_file=uploaded_file,
+            pasted_text=pasted_text
+        )
 
-        elif file_type == "json":
-            data = json.load(uploaded_file)
-            text_data = json.dumps(data, indent=2)
-
-        elif file_type == "pdf":
-            reader = PdfReader(uploaded_file)
-            text_data = ""
-            for page in reader.pages:
-                text_data += page.extract_text() or ""
-
-        elif file_type == "docx":
-            doc = docx.Document(uploaded_file)
-            text_data = "\n".join([para.text for para in doc.paragraphs])
+        if error:
+            st.error(error)
 
         else:
-            st.error("Unsupported file type.")
-            text_data = None
+            st.success(f"Extracted ({file_type.upper()}) successfully!")
 
-        # Step 3: Check if text was successfully extracted
-        if text_data and text_data.strip():
-            st.success("Text data detected in the uploaded file!")
-            with st.expander("View Extracted Text"):
-                st.write(
-                    text_data[:2000] +
-                    ("..." if len(text_data) > 2000 else "")
+            # ---- FILE-TYPE BASED PREPROCESSING ---- #
+            if file_type in ["txt", "pdf"]:
+                processed, err = preprocess_text(raw_text, file_type)
+                if err:
+                    st.error(err)
+                else:
+                    st.success("Preprocessing complete!")
+                    st.write(processed[:2000])
+
+            elif file_type == "csv":
+                processed_df, err = preprocess_text(
+                    text=None,
+                    file_type="csv",
+                    df=df_data
                 )
-        else:
-            st.warning(
-                "The uploaded file does not seem to contain "
-                "readable text data."
-            )
+                if err:
+                    st.error(err)
+                else:
+                    st.success("CSV preprocessing complete!")
+                    st.dataframe(processed_df.head())
 
-    except Exception as e:
-        st.error(f"Error reading file: {e}")
+            st.info("➡ Move to the 'Text Analysis' tab for insights.")
 
-else:
-    st.info("Please upload a file to begin.")
+# ---------------- TEXT ANALYSIS ------------------
+elif selected == "Text Analysis":
+    st.subheader("Results will appear here after processing.")
+    st.info("Since session_state is removed, copy-paste your processed text here to analyze it.")
