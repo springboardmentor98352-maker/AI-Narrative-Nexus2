@@ -42,7 +42,7 @@ selected = option_menu(
             menu_title=None,
             options=["About", "Text Input", "Text Analysis"],
             icons=["house", "upload", "bar-chart"],
-            default_index=0,
+            default_index=1,
             orientation="horizontal",
 )
 # -------------About Section-----------------
@@ -101,9 +101,9 @@ elif selected == "Text Input":
                     st.success("CSV preprocessing complete!")
                     st.dataframe(processed_df.head())
 
-            st.info("➡ Move to the 'Text Analysis' tab for insights.")
+            st.info(" Move to the 'Text Analysis' tab for insights.")
 
 # ---------------- TEXT ANALYSIS ------------------
 elif selected == "Text Analysis":
-    st.subheader("Results will appear here after processing.")
-    st.info("Since session_state is removed, copy-paste your processed text here to analyze it.")
+    st.subheader("text analysis part")
+   
