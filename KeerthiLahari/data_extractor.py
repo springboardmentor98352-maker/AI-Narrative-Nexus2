@@ -2,21 +2,12 @@ import pandas as pd
 from PyPDF2 import PdfReader
 from io import StringIO
 
-def extract_text_from_file(uploaded_file=None, pasted_text=None):
-    """
-    Extract text either from uploaded file OR from manually pasted text.
-    Returns:
-    - raw_text (string)
-    - file_type (txt/pdf/csv)
-    - df (for csv only)
-    - error message
-    """
 
-    # Case 1: Manual text input
+def extract_text_from_file(uploaded_file=None, pasted_text=None):
+
     if pasted_text and pasted_text.strip():
         return pasted_text, "txt", None, None
 
-    # Case 2: No input
     if uploaded_file is None:
         return None, None, None, "No file uploaded or text pasted."
 

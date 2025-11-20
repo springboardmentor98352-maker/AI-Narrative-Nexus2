@@ -1,6 +1,5 @@
 import os
 import re
-import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
@@ -10,13 +9,17 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
+
 def clean_text(text):
     text = text.lower()
-    text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)  # remove punctuation
+    text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)  
     tokens = text.split()
     tokens = [t for t in tokens if t not in stop_words]
+    print(tokens[:20])
     tokens = [lemmatizer.lemmatize(t) for t in tokens]
+    print(tokens[:10])
     return " ".join(tokens)
+
 
 def preprocess_text(text, file_type, df=None, csv_text_columns=None):
     try:
@@ -33,7 +36,8 @@ def preprocess_text(text, file_type, df=None, csv_text_columns=None):
         # -------- CSV -------- #
         if file_type == "csv":
             if csv_text_columns is None:
-                csv_text_columns = df.select_dtypes(include=["object"]).columns.tolist()
+                csv_text_columns = \
+                    df.select_dtypes(include=["object"]).columns.tolist()
 
             for col in csv_text_columns:
                 df[col] = df[col].astype(str).apply(clean_text)
