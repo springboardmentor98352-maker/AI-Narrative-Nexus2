@@ -7,7 +7,6 @@ STOP_WORDS = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for
               'might', 'must', 'can', 'this', 'that', 'these', 'those'}
 
 def process_text(text):
-    """Apply all preprocessing steps to text"""
     text = clean_text(text)
     text = remove_stopwords(text)
     return text
@@ -30,4 +29,5 @@ def get_stats(original, cleaned):
         'original_chars': len(original),
         'cleaned_words': len(cleaned.split()),
         'cleaned_chars': len(cleaned)
+
     }
