@@ -12,7 +12,7 @@ lemmatizer = WordNetLemmatizer()
 
 def clean_text(text):
     text = text.lower()
-    text = re.sub(r"[^a-zA-Z0-9\s]", " ", text)  
+    text = re.sub(r"[^a-zA-Z0-9.\s]", " ", text)  
     tokens = text.split()
     tokens = [t for t in tokens if t not in stop_words]
     print(tokens[:20])
