@@ -215,7 +215,7 @@ elif selected == "Text Analysis":
         st.markdown("</div>", unsafe_allow_html=True)
 
 
-        # ---------------- ROW 4 – Sentiment Emoji ---------------- #
+        # ---------- ROW 4 – Sentiment Emoji ---------------- #
         st.markdown(f"""
         <div class="card" style="text-align:left;">
             <h3>Overall Sentiment</h3>
@@ -223,7 +223,7 @@ elif selected == "Text Analysis":
         </div>
         """, unsafe_allow_html=True)
 
-        # ---------------- ROW 5 – Sentiment Distribution Line Chart ---------------- #
+        # ---------- ROW 5 – Sentiment Distribution Line Chart ----- #
         import pandas as pd
 
         percent_dist = {
