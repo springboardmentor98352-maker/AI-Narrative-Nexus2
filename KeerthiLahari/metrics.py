@@ -32,7 +32,6 @@ def sentiment_distribution(sentiment_scores):
 
 
 def sentiment_to_emoji(score):
-    """Return BIG emoji for sentiment."""
     if score > 0.2:
         return " Positive"
     elif score < -0.2:
@@ -66,7 +65,7 @@ def simple_summary(text):
     if len(sentences) > 2:
         return sentences[0].strip() + ". " + sentences[-2].strip() + "."
     else:
-        return text[:2000] + "..."
+        return text[:1000] + "..."
 
 
 # ------------ LOAD PROCESSED DATA ------------- #

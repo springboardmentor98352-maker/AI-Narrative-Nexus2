@@ -4,3 +4,4 @@ PyPDF2
 python-docx
 streamlit-option-menu
 nltk
+matplotlib
