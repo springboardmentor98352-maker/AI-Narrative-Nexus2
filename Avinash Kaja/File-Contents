@@ -1,0 +1,25 @@
+NarrativeNexus/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+├── .gitignore
+│
+├── assets/
+│   └── custom.css
+│
+├── utils/
+│   ├── file_utils.py
+│   ├── preprocessing.py
+│   ├── summarizer.py
+│   ├── topic_modeling.py
+│   ├── sentiment.py
+│   ├── visualization.py
+│   ├── cosine_sim.py
+│   ├── semantic_search.py
+│   ├── language.py
+│   ├── translate.py
+│   └── report.py
+│
+└── uploaded_files/
+    └── (auto-generated uploaded documents)
