@@ -19,20 +19,20 @@ h1, h2 {
     font-weight: 700 !important;
 }
 
-/* LABELS (Tokenize, Total Words, Before/After preprocessing titles) */
+/* Labels, descriptions, small text */
 label, p, span {
-    color: #4d4d4d !important; 
+    color: #4d4d4d !important;
     font-size: 16px !important;
     font-family: 'Poppins', sans-serif;
 }
 
-/* Before / After Preprocessing Titles */
+/* Section headers (Before/After Preprocessing etc.) */
 .block-container h3 {
-    color: #2c2c2c !important; 
+    color: #2c2c2c !important;
     font-weight: 700 !important;
 }
 
-/* Text box styling */
+/* Text input boxes */
 .stTextArea textarea,
 .stTextInput > div > div > input {
     background-color: #ffffff !important;
@@ -62,18 +62,23 @@ div.stTabs [role="tablist"] p {
     color: #333 !important;
 }
 
+/* Center tab navigation */
+.stTabs [data-baseweb="tab-list"] {
+    justify-content: center;
+}
+
 div.stTabs [role="tab"][aria-selected="true"] {
-    background-color: #e6f0ff;
+    background-color: #e6f0ff !important;
     border-radius: 10px;
 }
 
 div.stTabs [role="tab"] {
-    background-color: #f3f3f3;
+    background-color: #f3f3f3 !important;
     padding: 8px 16px;
     border-radius: 10px;
 }
 
-/* ---- FILE UPLOADER ---- */
+/* FILE UPLOADER BOX */
 [data-testid="stFileUploader"] section {
     background-color: #f3f3f3 !important;
     color: #000 !important;
@@ -86,9 +91,9 @@ div.stTabs [role="tab"] {
 [data-testid="stFileUploader"] button {
     background-color: #d9d9d9 !important;
     color: #000000 !important;
-    font-weight: 600;
-    border-radius: 8px;
-    padding: 8px 16px;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
 }
 
 [data-testid="stFileUploader"] button:hover {
@@ -96,15 +101,36 @@ div.stTabs [role="tab"] {
 }
 
 /* FILE NAME TEXT */
-[data-testid="stFileUploader"] div:nth-child(1) span {
-    color: #26282b !important;   /* Black */
+[data-testid="stFileUploader"] div[role="textbox"] span {
+    color: #26282b !important;
     font-weight: 600 !important;
 }
 
 /* FILE SIZE TEXT */
 [data-testid="stFileUploader"] small {
-    color: #444444 !important;   /* Dark grey */
+    color: #444444 !important;
     font-weight: 600 !important;
+}
+
+/* ---------------------------------------------- */
+/* FIX BLACK CODE BOX → MAKE IT LIGHT LIKE CARDS */
+/* ---------------------------------------------- */
+
+.stCodeBlock, pre, code {
+    background-color: #f3f3f3 !important;
+    color: #111 !important;
+    border-radius: 10px !important;
+    padding: 12px !important;
+    border: 1px solid #dcdcdc !important;
+    font-size: 16px !important;
+}
+
+/* Output inside markdown */
+[data-testid="stMarkdownContainer"] pre {
+    background-color: #f3f3f3 !important;
+    color: #111 !important;
+    border-radius: 10px !important;
+    border: 1px solid #dcdcdc !important;
 }
 
 </style>
