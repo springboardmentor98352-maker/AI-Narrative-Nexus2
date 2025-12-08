@@ -1,0 +1,13 @@
+# Ignore virtual environment
+virtual/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# macOS system files
+.DS_Store
+Final_data/
+file_preprocessing
+ 
