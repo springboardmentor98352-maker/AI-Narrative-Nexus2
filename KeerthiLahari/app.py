@@ -14,7 +14,7 @@ from metrics import (
     )
 
 
-# ---------- GLOBAL CSS FIXES ------------
+# ---------- GLOBAL CSS FIXES need to be worked in future------------
 st.markdown("""
 <style>
 .block-container {
@@ -244,4 +244,5 @@ elif selected == "Text Analysis":
         """, unsafe_allow_html=True)
 
         st.bar_chart(df_chart, x="Sentiment", y="Percentage", height=200)
+        
 
