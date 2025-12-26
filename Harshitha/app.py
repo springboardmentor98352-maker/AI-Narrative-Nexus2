@@ -1,131 +1,209 @@
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import streamlit as st
-from ui import apply_custom_css
-from analysis import analyze_text
-from summary import generate_summary
-from preprocessing import clean_text
-from upload_section import upload_and_input
-from results_section import show_results
 import PyPDF2
 import docx2txt
 import pandas as pd
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import letter
-from io import BytesIO
+from analysis import analyze_text
+from utils import generate_report
+from preprocessing import clean_text
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+import re
+from collections import Counter
+import numpy as np
 
-st.set_page_config(page_title="NarrativeNexus", layout="wide")
-apply_custom_css()
+st.set_page_config("NarrativeNexus", layout="wide")
 
-st.markdown("<h1 class='title'>NarrativeNexus</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle' style='color:#ff4b8b;'>Dynamic AI Text Analysis Platform</p>", unsafe_allow_html=True)
+st.markdown("""
+<style>
+body { background-color:#fff; }
+div[data-baseweb="tab-list"] { justify-content: space-between; }
+div[data-baseweb="tab-border"] { display:none; }
+button[data-baseweb="tab"] {
+    background:black !important;
+    color:white !important;
+    font-size:18px;
+    padding:14px;
+    width:100%;
+    border-radius:14px;
+    font-weight:600;
+}
+button[data-baseweb="tab"][aria-selected="true"] {
+    background:#222 !important;
+}
+.metric-card {
+    background:#ff4b8b;
+    color:white;
+    padding:25px;
+    border-radius:16px;
+    text-align:center;
+}
+.metric-value {
+    font-size:42px;
+    font-weight:bold;
+}
+textarea {
+    background:black !important;
+    color:white !important;
+    border-radius:12px !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
+st.markdown("<h1 style='text-align:center;'>NarrativeNexus</h1>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align:center;color:#ff4b8b'>Dynamic AI Text Analysis Platform</h3>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center;color:#000'>Sentiment • Topic Modeling • Summarization</p>", unsafe_allow_html=True)
 
-uploaded_files, user_text, analyze = upload_and_input()
+if "analysis" not in st.session_state:
+    st.session_state.analysis = None
+    st.session_state.text = ""
 
-def extract_text_from_file(file):
-    if file.type == "application/pdf":
+tab1, tab2, tab3 = st.tabs(["Upload Files", "Paste Text", "Analyzed Text"])
+
+with tab1:
+    file = st.file_uploader("Upload TXT, PDF, DOCX, CSV", type=["txt", "pdf", "docx", "csv"])
+    if file:
+        text = ""
         try:
-            reader = PyPDF2.PdfReader(file)
-            text = ""
-            for page in reader.pages:
-                t = page.extract_text()
-                if t:
-                    text += t + "\n"
-            return text
-        except:
-            try:
-                return file.getvalue().decode("utf-8", errors="ignore")
-            except:
-                return ""
-    if file.type in ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"):
-        try:
-            return docx2txt.process(file)
-        except:
-            try:
-                return file.getvalue().decode("utf-8", errors="ignore")
-            except:
-                return ""
-    if file.type in ("text/csv", "text/plain", "application/csv"):
-        try:
-            df = pd.read_csv(file)
-            texts = []
-            for col in df.columns:
-                if df[col].dtype == object:
-                    texts.append(" ".join(df[col].astype(str).tolist()))
-            return "\n".join(texts) if texts else df.to_csv(index=False)
-        except:
-            try:
-                return file.getvalue().decode("utf-8", errors="ignore")
-            except:
-                return ""
-    try:
-        return file.getvalue().decode("utf-8", errors="ignore")
-    except:
-        return ""
+            if file.type == "application/pdf":
+                reader = PyPDF2.PdfReader(file)
+                text = " ".join(p.extract_text() for p in reader.pages if p.extract_text())
+            elif file.type.endswith("csv"):
+                text = " ".join(pd.read_csv(file).astype(str).values.flatten())
+            elif file.type.endswith("docx"):
+                text = docx2txt.process(file)
+            else:
+                text = file.getvalue().decode("utf-8", errors="ignore")
+        except Exception as e:
+            st.error(e)
 
-def generate_pdf(original, analysis, summary):
-    buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-    y = height - 50
+        if text and st.button("Analyze Text", key="upload"):
+            st.session_state.analysis = analyze_text(text, text.lower())
+            st.session_state.text = text
+            st.success("Text analyzed successfully")
 
-    def write(text):
-        nonlocal y
-        lines = text.split("\n")
-        for line in lines:
-            if y < 50:
-                c.showPage()
-                y = height - 50
-            c.drawString(50, y, line)
-            y -= 16
+with tab2:
+    text = st.text_area("Paste your text", height=200)
+    if text and st.button("Analyze Text", key="paste"):
+        st.session_state.analysis = analyze_text(text, text.lower())
+        st.session_state.text = text
+        st.success("Text analyzed successfully")
 
-    write("NarrativeNexus Analysis Report\n")
-    write("\nOriginal Text:\n")
-    write(original[:5000])
-
-    write("\nAnalysis:\n")
-    for k, v in analysis.items():
-        write(f"{k}: {v}")
-
-    write("\nSummary:\n")
-    write(summary)
-
-    c.save()
-    buffer.seek(0)
-    return buffer
-
-if analyze:
-    final_text = ""
-    if uploaded_files:
-        parts = []
-        for f in uploaded_files:
-            parts.append(extract_text_from_file(f))
-        final_text = "\n\n".join([p for p in parts if p])
-    elif user_text and user_text.strip():
-        final_text = user_text
+with tab3:
+    if not st.session_state.analysis:
+        st.info("Analyze text to view results")
     else:
-        st.error("No text provided. Paste text or upload files.")
-        st.stop()
+        a = st.session_state.analysis
+        counts = a.get("sentiment_distribution", {})
+        total = sum(counts.values())
+        overall_label = a.get("overall_sentiment", "N/A")
 
-    if not final_text.strip():
-        st.error("Uploaded files contained no readable text.")
-        st.stop()
+        c1, c2, c3 = st.columns(3)
 
-    cleaned = clean_text(final_text)
-    analysis = analyze_text(final_text)
-    summary = generate_summary(final_text)
+        with c1:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div style='font-size:18px;'>Word Count:</div>
+                <div class='metric-value'>{a.get('word_count',0)}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    show_results(final_text,
-                 analysis,
-                 analysis.get("sentence_level", []),
-                 None,
-                 analysis.get("keywords", []),
-                 summary)
+        with c2:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div style='font-size:18px;'>Sentence Count:</div>
+                <div class='metric-value'>{a.get('sentence_count',0)}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    pdf_file = generate_pdf(final_text, analysis, summary)
+        with c3:
+            st.markdown(f"""
+            <div class='metric-card'>
+                <div style='font-size:18px;'>Overall Sentiment:</div>
+                <div class='metric-value'>{overall_label}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    st.download_button(
-        "Download PDF Report",
-        data=pdf_file,
-        file_name="NarrativeNexus_Report.pdf",
-        mime="application/pdf"
-    )
+        st.subheader("Sentence-level Sentiment Distribution")
+
+        def bar(label, value, color):
+            pct = value / max(total, 1)
+            st.markdown(f"""
+            <div style="margin-bottom:6px">
+                <b>{label}</b>
+                <div style="background:#ddd;height:6px;border-radius:10px;width:70%;">
+                    <div style="width:{pct*100}%;background:{color};height:6px;border-radius:10px;"></div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        bar("Positive", counts.get("Positive", 0), "#2ecc71")
+        bar("Neutral", counts.get("Neutral", 0), "#f1c40f")
+        bar("Negative", counts.get("Negative", 0), "#e74c3c")
+
+        st.subheader("Top Keywords (Frequency Analysis):")
+
+        words = clean_text(st.session_state.text).split()
+        filtered_words = [w for w in words if w not in ENGLISH_STOP_WORDS and len(w) > 2]
+
+        if filtered_words:
+            counter = Counter(filtered_words)
+            top_words = counter.most_common(8)
+
+            df_keywords = pd.DataFrame(top_words, columns=["Keyword", "Frequency"])
+
+            col1, col2 = st.columns([1, 1])
+
+            with col1:
+                st.markdown(
+                    "<div style='font-size:20px;font-weight:600;color:black;margin-bottom:4px;'>Frequency Bar Chart:</div>",
+                    unsafe_allow_html=True
+                )
+
+                fig, ax = plt.subplots(figsize=(5, 4))
+                ax.bar(df_keywords["Keyword"], df_keywords["Frequency"], color="#ff69b4")
+                ax.set_xlabel("Keywords")
+                ax.set_ylabel("Frequency")
+                ax.tick_params(axis="x", rotation=45)
+                plt.tight_layout()
+                st.pyplot(fig, use_container_width=True)
+
+            with col2:
+                st.markdown(
+                    "<div style='font-size:20px;font-weight:600;color:black;margin-bottom:4px;'>Frequency Table:</div>",
+                    unsafe_allow_html=True
+                )
+
+                st.dataframe(
+                    df_keywords,
+                    height=260,
+                    use_container_width=True
+                )
+        else:
+            st.info("No keywords available")
+
+        st.subheader("Topic Modeling:")
+        lda_tab, nmf_tab = st.tabs(["LDA Topics", "NMF Topics"])
+
+        with lda_tab:
+            for t in a.get("topics", {}).get("lda", []):
+                st.write("•", t)
+
+        with nmf_tab:
+            for t in a.get("topics", {}).get("nmf", []):
+                st.write("•", t)
+
+        st.subheader("Executive Summary:")
+        st.write(a.get("summary", "Not available"))
+
+        st.subheader("Actionable Insights:")
+        for i in a.get("insights", []):
+            st.write("•", i)
+
+        report = generate_report(st.session_state.text, a)
+        st.download_button(
+            label="Download Report",
+            data=report.encode("utf-8"),
+            file_name="narrativenexus_report.txt"
+        )
