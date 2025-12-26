@@ -1,0 +1,58 @@
+/* Global container padding */
+.block-container {
+    padding-top: 1rem !important;
+}
+
+/* Centered text */
+.center-text {
+    text-align: center;
+}
+
+/* Spacing for headings/subtitles */
+.spacing {
+    margin-top: -20px;
+}
+
+/* Card style for metrics */
+.card {
+    background-color: #f5f7ff;
+    padding: 18px;
+    border-radius: 12px;
+    box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+}
+
+.card h3 {
+    font-size: 22px;
+    margin: 0;
+    color: #333;
+}
+
+.card p {
+    font-size: 18px;
+    margin: 5px;
+    color: #444;
+}
+
+/* Token chip style */
+.token-chip {
+    padding: 6px 12px;
+    border-radius: 15px;
+    margin: 4px;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #222;
+}
+
+/* Optional: Summary card text style */
+.summary-text {
+    font-size: 16px;
+    color: #333;
+}
+
+/* Optional: Sentiment emoji size */
+.sentiment-emoji {
+    font-size: 25px;
+    margin-top: 10px;
+}
