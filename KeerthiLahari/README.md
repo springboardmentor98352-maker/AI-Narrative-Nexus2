@@ -2,7 +2,9 @@
 ````markdown
 🧠 Dynamic AI Text Summarisation
 
-A Streamlit-based application for extracting, cleaning, analyzing, and summarizing text data from multiple sources such as TXT, PDF, and CSV files.The project provides abstractive summaries, text metrics, sentiment analysis, and downloadable reports, making it ideal for research, content analysis, and data-driven insights.
+A Streamlit-based application for extracting, cleaning, analyzing, and summarizing text data from multiple sources such as TXT, PDF, and CSV files.
+The project provides abstractive summaries, text metrics, sentiment analysis, and downloadable reports, making it ideal for research, content analysis, and data-driven insights.
+---
 ````
 
 1. Create a virtual environment (recommended)
