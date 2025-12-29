@@ -1,26 +1,4 @@
 
-1. Create a virtual environment (recommended)
-
-```bash
-python -m venv venv
-source venv/bin/activate      # macOS / Linux
-venv\Scripts\activate         # Windows
-```
-
-2. Install dependencies
-
-```bash
-pip install -r KeerthiLahari/requirements.txt
-```
-
-3. Run the Streamlit application
-
-```bash
-streamlit run KeerthiLahari/app.py
-```
-
----
-
 🗂 Project Structure
 
 ```
@@ -47,7 +25,27 @@ Dynamic AI text Summarisation/
 └── virtual/                    # Virtual environment
 ```
 
----
+
+1. Create a virtual environment (recommended)
+
+```bash
+python -m venv venv
+source venv/bin/activate      # macOS / Linux
+venv\Scripts\activate         # Windows
+```
+
+2. Install dependencies
+
+```bash
+pip install -r KeerthiLahari/requirements.txt
+```
+
+3. Run the Streamlit application
+
+```bash
+streamlit run KeerthiLahari/app.py
+```
+
 
 ⚡ Technologies Used
 
@@ -57,16 +55,4 @@ Dynamic AI text Summarisation/
 * Scikit-learn – LDA & NMF topic modeling
 * Pandas & NumPy – Data processing and CSV summarization
 * Plotly – Sentiment distribution visualizations
-
----
-
-👤 Author
-
-Edara Keerthi Lahari
-
----
-
-📄 License
-
-This project is licensed under the MIT License.
 
