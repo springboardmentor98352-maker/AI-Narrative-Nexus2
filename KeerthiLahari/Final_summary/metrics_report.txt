@@ -1,0 +1,12 @@
+=== Summary ===
+Diwali, the Festival of Lights, is India's most popular festival, symbolizing the triumph of good over evil and light over darkness, marked by lighting diyas, decorating homes with rangoli, wearing new clothes, performing Lakshmi Puja, exchanging sweets and gifts, and fireworks, celebrating Lord Rama's return to Ayodhya, bringing joy, unity, and prosperity to families globally. Diwali, also known as Deepavali, is a vibrant, five day Hindu festival celebrated across India and by communities worldwide, signifying hope, new beginnings, and the victory of righteousness. It falls in October or November, marking the new moon night of the Hindu month of Kartika, and is a time for deep spiritual reflection and communal joy. Significance MythologyLord Rama's Return The most common legend celebrates Lord Rama's return to Ayodhya after 14 years of exile and defeating the demon Ravana, with the people lighting earthen lamps diyas to welcome him.
+
+=== Metrics ===
+Word Count: 145
+Sentence Count: 4
+Top Tokens: and, the, of, to, is, new, Rama's, Diwali,
+Overall Sentiment:  Positive
+Sentiment Distribution:
+  Positive: 28.40%
+  Negative: 4.80%
+  Neutral: 66.70%
