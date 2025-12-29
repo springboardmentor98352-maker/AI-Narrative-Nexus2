@@ -9,16 +9,18 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
+custom_stopwords = set([
+    "http", "https", "www", "com",
+    "page", "figure", "table"
+])
+
 
 def clean_text(text):
-    text = text.lower()
-    text = re.sub(r"[^a-zA-Z0-9.\s]", " ", text)  
+    text = re.sub(r"[^a-zA-Z0-9.,!?'\s]", " ", text)
     tokens = text.split()
-    tokens = [t for t in tokens if t not in stop_words]
-    print(tokens[:20])
-    tokens = [lemmatizer.lemmatize(t) for t in tokens]
-    print(tokens[:10])
-    return " ".join(tokens)
+    tokens = [t for t in tokens if t not in custom_stopwords]
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
 
 
 def preprocess_text(text, file_type, df=None, csv_text_columns=None):

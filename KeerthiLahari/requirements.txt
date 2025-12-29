@@ -5,3 +5,7 @@ python-docx
 streamlit-option-menu
 nltk
 matplotlib
+scikit-learn 
+transformers 
+torch
+plotly
