@@ -2,7 +2,6 @@ import streamlit as st
 
 
 def render_about():
-    st.subheader("About Narrative Nexus")
     st.markdown("""
     <div style="text-align:justify; font-size:18px;">
     Narrative Nexus is a dynamic text analysis platform designed to help users quickly summarize content,

@@ -13,6 +13,7 @@ def load_css():
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # ----------- Render Header ----------
+st.write("")
 render_header()
 load_css()
 
@@ -22,8 +23,8 @@ selected = render_menu()
 # ----------- Render Selected Section ----------
 if selected == "About":
     render_about()
-elif selected == "Text Input":
+elif selected == "Input":
     render_text_input()
-elif selected == "Text Analysis":
+elif selected == "Analysis":
     render_analysis()
 

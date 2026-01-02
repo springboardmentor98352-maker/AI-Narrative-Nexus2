@@ -1,41 +1,40 @@
 import streamlit as st
 import os
+import pandas as pd
+
 from data_extractor import extract_text_from_file
 from data_preprocessing import preprocess_text
-import pandas as pd
+from summarise import generate_abstractive_summary
 
 INPUT_FOLDER = "Input_data"
 FINAL_FOLDER = "Final_data"
+FINAL_SUMMARY_FOLDER = "KeerthiLahari/Final_summary"
 
 os.makedirs(INPUT_FOLDER, exist_ok=True)
 os.makedirs(FINAL_FOLDER, exist_ok=True)
+os.makedirs(FINAL_SUMMARY_FOLDER, exist_ok=True)
+
 
 def render_text_input():
-    st.subheader("Upload a file OR paste text")
 
-    # ------------------ Load last processed text ------------------ #
-    last_text_file = os.path.join(INPUT_FOLDER, "last_text.txt")
-    last_text = ""
-    if os.path.exists(last_text_file):
-        with open(last_text_file, "r", encoding="utf-8") as f:
-            last_text = f.read()
+    # Initialize session state
+    if "last_file_type" not in st.session_state:
+        st.session_state.last_file_type = None
 
-    # ------------------ Text Area ------------------ #
-    pasted_text = st.text_area(
-        "Or paste text here...",
-        height=200,
-        value=last_text
-    )
+    # ------------------ Paste text ------------------
+    pasted_text = st.text_area("Paste text here", height=200)
 
-    # ------------------ File Uploader ------------------ #
     uploaded_file = st.file_uploader(
-        "Upload TXT / CSV / PDF (optional)",
+        "Upload TXT / CSV / PDF",
         type=["txt", "csv", "pdf"]
     )
 
-    # ------------------ Process Button ------------------ #
-    if st.button("Process Text"):
-        raw_text, file_type, df_data, error = extract_text_from_file(
+    # ------------------ Auto-process ------------------
+    processed_successfully = False
+    file_type = None
+
+    if uploaded_file or pasted_text:
+        raw_text, file_type_detected, df_data, error = extract_text_from_file(
             uploaded_file=uploaded_file,
             pasted_text=pasted_text
         )
@@ -44,16 +43,9 @@ def render_text_input():
             st.error(error)
             return
 
-        st.success(f"Extracted ({file_type.upper()}) successfully!")
-
-        # ------------------ Save last input text ------------------ #
-        if file_type in ["txt", "pdf"]:
-            # Save the extracted text in Input_data for persistence
-            with open(os.path.join(INPUT_FOLDER, "last_text.txt"), "w", encoding="utf-8") as f:
-                f.write(raw_text)
-
-            # Preprocess and save to Final_data
-            processed, err = preprocess_text(raw_text, file_type)
+        if file_type_detected in ["txt", "pdf"]:
+            st.session_state.last_file_type = "text"
+            processed, err = preprocess_text(raw_text, file_type_detected)
             if err:
                 st.error(err)
                 return
@@ -61,20 +53,47 @@ def render_text_input():
             with open(os.path.join(FINAL_FOLDER, "processed_text.txt"), "w", encoding="utf-8") as f:
                 f.write(processed)
 
-            st.write(processed[:2000])
+            processed_successfully = True
 
-        elif file_type == "csv":
-            # Save CSV file in Input_data
-            csv_path = os.path.join(INPUT_FOLDER, "last_csv.csv")
-            df_data.to_csv(csv_path, index=False)
-
-            # Preprocess CSV and save to Final_data
-            processed_df, err = preprocess_text(text=None, file_type="csv", df=df_data)
+        elif file_type_detected == "csv":
+            st.session_state.last_file_type = "csv"
+            processed_df, err = preprocess_text(None, "csv", df_data)
             if err:
                 st.error(err)
                 return
-
             processed_df.to_csv(os.path.join(FINAL_FOLDER, "processed_csv.csv"), index=False)
-            st.dataframe(processed_df.head())
+            processed_successfully = True
 
-        st.info("Move to the 'Text Analysis' tab for insights.")
+    # ------------------ Summarise Button ------------------
+    if st.button("Summarise"):
+        if not processed_successfully:
+            st.error("❌ Please upload or paste text to summarise.")
+            return
+        else:
+            file_type = st.session_state.last_file_type
+
+            if file_type == "csv":
+                df = pd.read_csv(os.path.join(FINAL_FOLDER, "processed_csv.csv"))
+                st.success("Summary generated using Pandas Describe")
+                st.dataframe(df.describe())  # ✅ interactive & readable
+
+                # Optional: store CSV summary as text
+                csv_summary_text = df.describe().to_string()
+                summary_file = os.path.join(FINAL_SUMMARY_FOLDER, "summary.txt")
+                with open(summary_file, "w", encoding="utf-8") as f:
+                    f.write("=== CSV Summary ===\n")
+                    f.write(csv_summary_text)
+                    
+            else:
+                model, summary = generate_abstractive_summary()
+                if summary:
+                    st.success(f"Summary generated using {model}")
+                    st.write(summary)
+
+                    # Store the text summary
+                    summary_file = os.path.join(FINAL_SUMMARY_FOLDER, "summary.txt")
+                    with open(summary_file, "w", encoding="utf-8") as f:
+                        f.write(summary)
+    
+                else:
+                    st.warning("Summary could not be generated.")
