@@ -8,10 +8,27 @@ import pandas as pd
 from analysis import analyze_text
 from utils import generate_report
 from preprocessing import clean_text
+from wordcloud import WordCloud
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-import re
 from collections import Counter
 import numpy as np
+from PIL import Image
+import numpy as np
+
+def show_wordcloud(text):
+    if not text or not text.strip():
+        st.warning("No text available for Word Cloud.")
+        return
+
+    wc = WordCloud(
+        width=1200,
+        height=800,
+        background_color="white",
+        max_words=60
+    ).generate(text)
+
+    img = Image.fromarray(wc.to_array())
+    st.image(img, caption="Word Cloud", width=850)
 
 st.set_page_config("NarrativeNexus", layout="wide")
 
@@ -48,11 +65,23 @@ textarea {
     color:white !important;
     border-radius:12px !important;
 }
+div.stButton > button {
+    background-color: #ff4b8b !important;
+    color: white !important;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 20px;
+    border-radius: 12px;
+}
+div.stButton > button:hover {
+    background-color: #ff1f70 !important;
+    color: white !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<h1 style='text-align:center;'>NarrativeNexus</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align:center;color:#ff4b8b'>Dynamic AI Text Analysis Platform</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align:center;color:#ff4b8b'>The Dynamic AI Text Analysis Platform</h3>", unsafe_allow_html=True)
 st.markdown("<p style='text-align:center;color:#000'>Sentiment • Topic Modeling • Summarization</p>", unsafe_allow_html=True)
 
 if "analysis" not in st.session_state:
@@ -70,7 +99,7 @@ with tab1:
                 reader = PyPDF2.PdfReader(file)
                 text = " ".join(p.extract_text() for p in reader.pages if p.extract_text())
             elif file.type.endswith("csv"):
-                text = " ".join(pd.read_csv(file).astype(str).values.flatten())
+                text = " ".join(pd.read_csv(file, dtype=str).fillna("").astype(str).values.flatten())
             elif file.type.endswith("docx"):
                 text = docx2txt.process(file)
             else:
@@ -79,15 +108,17 @@ with tab1:
             st.error(e)
 
         if text and st.button("Analyze Text", key="upload"):
-            st.session_state.analysis = analyze_text(text, text.lower())
-            st.session_state.text = text
+            with st.spinner("Analyzing text..."):
+                st.session_state.analysis = analyze_text(text, text.lower())
+                st.session_state.text = text
             st.success("Text analyzed successfully")
 
 with tab2:
     text = st.text_area("Paste your text", height=200)
     if text and st.button("Analyze Text", key="paste"):
-        st.session_state.analysis = analyze_text(text, text.lower())
-        st.session_state.text = text
+        with st.spinner("Analyzing text..."):
+            st.session_state.analysis = analyze_text(text, text.lower())
+            st.session_state.text = text
         st.success("Text analyzed successfully")
 
 with tab3:
@@ -95,95 +126,110 @@ with tab3:
         st.info("Analyze text to view results")
     else:
         a = st.session_state.analysis
+        avg_polarity = a.get("avg_polarity", 0.0)
         counts = a.get("sentiment_distribution", {})
         total = sum(counts.values())
         overall_label = a.get("overall_sentiment", "N/A")
 
         c1, c2, c3 = st.columns(3)
-
         with c1:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div style='font-size:18px;'>Word Count:</div>
-                <div class='metric-value'>{a.get('word_count',0)}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
+            st.markdown(
+                f"<div class='metric-card'><div style='font-size:18px;'>Word Count:</div>"
+                f"<div class='metric-value'>{a.get('word_count',0)}</div></div>",
+                unsafe_allow_html=True
+            )
         with c2:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div style='font-size:18px;'>Sentence Count:</div>
-                <div class='metric-value'>{a.get('sentence_count',0)}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(
+                f"<div class='metric-card'><div style='font-size:18px;'>Sentence Count:</div>"
+                f"<div class='metric-value'>{a.get('sentence_count',0)}</div></div>",
+                unsafe_allow_html=True
+            )
+        overall_label = a.get("overall_sentiment", "N/A")
+        polarity_score = a.get("polarity_score", 0.0)
 
         with c3:
-            st.markdown(f"""
-            <div class='metric-card'>
-                <div style='font-size:18px;'>Overall Sentiment:</div>
-                <div class='metric-value'>{overall_label}</div>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div class='metric-card'>
+                    <div style='font-size:18px;'>Overall Sentiment:</div>
+                    <div class='metric-value'>{overall_label} ({polarity_score})</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
-        st.subheader("Sentence-level Sentiment Distribution")
+        st.subheader("Sentence-level Sentiment Distribution:")
 
         def bar(label, value, color):
             pct = value / max(total, 1)
-            st.markdown(f"""
-            <div style="margin-bottom:6px">
-                <b>{label}</b>
-                <div style="background:#ddd;height:6px;border-radius:10px;width:70%;">
-                    <div style="width:{pct*100}%;background:{color};height:6px;border-radius:10px;"></div>
+            st.markdown(
+                f"""
+                <div style='margin-bottom:6px'>
+                    <b>{label}</b>
+                    <div style='background:#ddd;height:6px;border-radius:10px;width:70%;'>
+                        <div style='width:{pct*100}%;background:{color};
+                             height:6px;border-radius:10px;'></div>
+                    </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """,
+                unsafe_allow_html=True
+            )
 
         bar("Positive", counts.get("Positive", 0), "#2ecc71")
         bar("Neutral", counts.get("Neutral", 0), "#f1c40f")
         bar("Negative", counts.get("Negative", 0), "#e74c3c")
+        st.markdown(
+            f"<div style='margin-top:10px;font-size:15px;'><b>Counts:</b> "
+            f"Positive:{counts.get('Positive',0)} | "
+            f"Neutral:{counts.get('Neutral',0)} | "
+            f"Negative:{counts.get('Negative',0)}</div>",
+            unsafe_allow_html=True
+        )
 
         st.subheader("Top Keywords (Frequency Analysis):")
 
         words = clean_text(st.session_state.text).split()
-        filtered_words = [w for w in words if w not in ENGLISH_STOP_WORDS and len(w) > 2]
+        filtered_words = [
+            w for w in words if w not in ENGLISH_STOP_WORDS and len(w) > 2
+        ]
 
         if filtered_words:
             counter = Counter(filtered_words)
             top_words = counter.most_common(8)
-
             df_keywords = pd.DataFrame(top_words, columns=["Keyword", "Frequency"])
 
             col1, col2 = st.columns([1, 1])
 
             with col1:
                 st.markdown(
-                    "<div style='font-size:20px;font-weight:600;color:black;margin-bottom:4px;'>Frequency Bar Chart:</div>",
+                    "<div style='font-size:20px;font-weight:600;margin-bottom:6px;'>"
+                    "Frequency Bar Chart:</div>",
                     unsafe_allow_html=True
                 )
-
                 fig, ax = plt.subplots(figsize=(5, 4))
                 ax.bar(df_keywords["Keyword"], df_keywords["Frequency"], color="#ff69b4")
                 ax.set_xlabel("Keywords")
                 ax.set_ylabel("Frequency")
                 ax.tick_params(axis="x", rotation=45)
                 plt.tight_layout()
-                st.pyplot(fig, use_container_width=True)
+                st.pyplot(fig)
+                plt.close(fig)
 
             with col2:
                 st.markdown(
-                    "<div style='font-size:20px;font-weight:600;color:black;margin-bottom:4px;'>Frequency Table:</div>",
+                    "<div style='font-size:20px;font-weight:600;margin-bottom:6px;'>"
+                    "Frequency Table:</div>",
                     unsafe_allow_html=True
                 )
-
-                st.dataframe(
-                    df_keywords,
-                    height=260,
-                    use_container_width=True
-                )
+                st.table(df_keywords)
         else:
             st.info("No keywords available")
 
+        st.subheader("Word Cloud:")
+        show_wordcloud(" ".join(filtered_words[:100]))
+
         st.subheader("Topic Modeling:")
+
         lda_tab, nmf_tab = st.tabs(["LDA Topics", "NMF Topics"])
 
         with lda_tab:
@@ -194,14 +240,17 @@ with tab3:
             for t in a.get("topics", {}).get("nmf", []):
                 st.write("•", t)
 
-        st.subheader("Executive Summary:")
-        st.write(a.get("summary", "Not available"))
+        st.subheader("Executive Summary")
+        st.markdown(
+                    f"<div style='max-height:300px; overflow-y:auto; padding:10px; border:1px solid #ddd; border-radius:12px; background:#f9f9f9'>{st.session_state.text}</div>",
+                                 unsafe_allow_html=True)
 
         st.subheader("Actionable Insights:")
         for i in a.get("insights", []):
             st.write("•", i)
 
         report = generate_report(st.session_state.text, a)
+
         st.download_button(
             label="Download Report",
             data=report.encode("utf-8"),
